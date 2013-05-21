@@ -10,6 +10,7 @@ library(shapefiles)
 library(rgeos)
 #install.packages("cshapes")
 library(cshapes)
+library(plotrix)
 
 ###############################################################
 # convertpoints <- function(lat, lon, alt=1, rad=1)
@@ -32,7 +33,7 @@ library(cshapes)
 #   return(cbind(x,y,z))
 # }
 
-convertpoints <- function(lat,lon,alt=1,rad=1)
+convertpoints <- function(lon,lat,alt=1,rad=1)
 {
   phi <- (lat)*pi/180
   theta <- (lon)*pi/180
@@ -90,19 +91,20 @@ for(i in 1:length(worldfull))
     points <- rbind(points, cbind((worldfull@polygons[[i]])@Polygons[[j]]@coords[,1],(worldfull@polygons[[i]])@Polygons[[j]]@coords[,2],i,j))
   }
 }
-points2 <- apply(points,1,FUN=function(x) convertpoints(x[1],x[2]))
+points2 <- apply(points,1,FUN=function(x) convertpoints(lon=x[1],lat=x[2]))
 points2 <- t(points2)
 scatterplot3d(points2[,1],points2[,2],points2[,3],pch=".")
 
 
 worldfull <- readShapePoly("C:\\users\\ben\\my documents\\github\\RGlobe\\Data\\Azimuth_LoRes_Nations")
 worldfull$Continent[is.na(worldfull$Continent)] <- "Europe"
+worldfull <- gSimplify(worldfull,.5)
 plot(worldfull)
 axis(1);axis(2)
 points <- c(NULL,NULL,NULL,NULL)
 for(i in 1:length(worldfull))
 {
-  if(worldfull$Continent[i]!="Antarctica")
+  #if(worldfull$Continent[i]!="Antarctica")
   {
     for(j in 1:length(worldfull@polygons[[i]]@Polygons))
     {
@@ -111,13 +113,14 @@ for(i in 1:length(worldfull))
   }
 }
 summary(points)
-points2 <- apply(points,1,FUN=function(x) convertpoints(lat=x[2],lon=x[1]))
+points2 <- apply(points,1,FUN=function(x) convertpoints(lon=x[1],lat=x[2]))
 points2 <- t(points2)
 scatterplot3d(points2[,1],points2[,2],points2[,3],pch=".")
 
-ex <- 0; ey <- 0; ez <- -16;
-
-x11()
+ex <- 0; ey <- 0; ez <- 16;
+stars <- cbind(rnorm(100,0,5),rnorm(100,0,5))
+x11(width=8,height=8)
+par(mar=c(0,0,0,0))
 plot(1,1,type="n",xlim=c(-10,10),ylim=c(-10,10))
 checkForKey <- function()
 {
@@ -127,25 +130,29 @@ checkForKey <- function()
 keydown <- function(key)
 {
   if(key=="Up")
-    points2 <<- rotatey(points2,deg=355)
-  if(key=="Down")
     points2 <<- rotatey(points2,deg=5)
+  if(key=="Down")
+    points2 <<- rotatey(points2,deg=355)
   if(key=="Left")
-    points2 <<- rotatez(points2,deg=355)
-  if(key=="Right")
     points2 <<- rotatez(points2,deg=5)
+  if(key=="Right")
+    points2 <<- rotatez(points2,deg=355)
   if(key=="=")
-    points2 <<- rotatex(points2,deg=5)
-  if(key=="-")
     points2 <<- rotatex(points2,deg=355)
+  if(key=="-")
+    points2 <<- rotatex(points2,deg=5)
   if(key=="e")
     ez <<- ez+5
   if(key=="d")
     ez <<- ez-5
   dev.control(displaylist="inhibit")
   dev.control(displaylist="enable")
-  rect(-10,-10,10,10,col="white")
-  points(project(points2)[points2[,3]>0,1],project(points2)[points2[,3]>0,2],pch=".")
+  rect(-10,-10,10,10,col="black",lty=0)
+  points(stars[,1],stars[,2],pch=".",col="white")
+  draw.circle(0,0,6.35,col="white",lty=0)
+  draw.circle(0,0,6.1,col="#9999FF",lty=0)
+  draw.circle(0,0,5.85,col="blue")
+  points(project(points2)[points2[,3]>0,1],project(points2)[points2[,3]>0,2],pch=".",col="white")
   print(c(ex,ey,ez))
   checkForKey()
 }
