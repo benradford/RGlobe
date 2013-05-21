@@ -22,13 +22,24 @@ library(cshapes)
 #   return(cbind(x,y,z))  
 # }
 
+# convertpoints <- function(lat,lon,alt=1,rad=1)
+# {
+#   lat <- lat*(pi/180)
+#   lon <- lon*(pi/180)
+#   x <- rad*sin(lat)*cos(lon)
+#   y <- rad*sin(lat)*sin(lon)
+#   z <- rad*cos(lat)
+#   return(cbind(x,y,z))
+# }
+
 convertpoints <- function(lat,lon,alt=1,rad=1)
 {
-  lat <- lat*(pi/180)
-  lon <- lon*(pi/180)
-  x <- rad*sin(lat)*cos(lon)
-  y <- rad*sin(lat)*sin(lon)
-  z <- rad*cos(lat)
+  phi <- (lat)*pi/180
+  theta <- (lon)*pi/180
+  x <- -rad*cos(phi)*cos(theta)
+  y <- rad*sin(phi)
+  z <- rad*cos(phi)*sin(theta)
+  return(cbind(x,y,z))
 }
 
 project <- function(object)
@@ -87,6 +98,7 @@ scatterplot3d(points2[,1],points2[,2],points2[,3],pch=".")
 worldfull <- readShapePoly("C:\\users\\ben\\my documents\\github\\RGlobe\\Data\\Azimuth_LoRes_Nations")
 worldfull$Continent[is.na(worldfull$Continent)] <- "Europe"
 plot(worldfull)
+axis(1);axis(2)
 points <- c(NULL,NULL,NULL,NULL)
 for(i in 1:length(worldfull))
 {
@@ -99,7 +111,7 @@ for(i in 1:length(worldfull))
   }
 }
 summary(points)
-points2 <- apply(points,1,FUN=function(x) convertpoints(x[1],x[2]))
+points2 <- apply(points,1,FUN=function(x) convertpoints(lat=x[2],lon=x[1]))
 points2 <- t(points2)
 scatterplot3d(points2[,1],points2[,2],points2[,3],pch=".")
 
@@ -126,10 +138,14 @@ keydown <- function(key)
     points2 <<- rotatex(points2,deg=5)
   if(key=="-")
     points2 <<- rotatex(points2,deg=355)
+  if(key=="e")
+    ez <<- ez+5
+  if(key=="d")
+    ez <<- ez-5
   dev.control(displaylist="inhibit")
   dev.control(displaylist="enable")
   rect(-10,-10,10,10,col="white")
-  points(project(points2)[,1],project(points2)[,2],pch=".")
+  points(project(points2)[points2[,3]>0,1],project(points2)[points2[,3]>0,2],pch=".")
   print(c(ex,ey,ez))
   checkForKey()
 }
