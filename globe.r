@@ -12,14 +12,23 @@ library(rgeos)
 library(cshapes)
 
 ###############################################################
-convertpoints <- function(lat, lon, alt=1, rad=1)
+# convertpoints <- function(lat, lon, alt=1, rad=1)
+# {
+#   lat <- lat * (pi/180)
+#   lon <- lon * (pi/180)
+#   x <- -rad * cos(lat) * cos(lon)
+#   y <- rad * sin(lat) 
+#   z <- rad * cos(lat) * sin(lon)
+#   return(cbind(x,y,z))  
+# }
+
+convertpoints <- function(lat,lon,alt=1,rad=1)
 {
-  lat <- lat * (pi/180)
-  lon <- lon * (pi/180)
-  z <- -rad * cos(lat) * cos(lon)
-  y <- rad * sin(lat) 
-  x <- rad * cos(lat) * sin(lon)
-  return(cbind(x,y,z))  
+  lat <- lat*(pi/180)
+  lon <- lon*(pi/180)
+  x <- rad*sin(lat)*cos(lon)
+  y <- rad*sin(lat)*sin(lon)
+  z <- rad*cos(lat)
 }
 
 project <- function(object)
@@ -61,10 +70,7 @@ rotatey <- function(object,deg=1)
 worldfull <- cshp()
 plot(worldfull)
 test$CNTRY_NAME
-worldfull <- gSimplify(worldfull,1)
-#length(worldsimple)
-#plot(worldsimple, col="gray", border="white")
-
+#worldfull <- gSimplify(worldfull,1)
 points <- c(NULL,NULL,NULL,NULL)
 for(i in 1:length(worldfull))
 {
@@ -73,16 +79,28 @@ for(i in 1:length(worldfull))
     points <- rbind(points, cbind((worldfull@polygons[[i]])@Polygons[[j]]@coords[,1],(worldfull@polygons[[i]])@Polygons[[j]]@coords[,2],i,j))
   }
 }
-
 points2 <- apply(points,1,FUN=function(x) convertpoints(x[1],x[2]))
 points2 <- t(points2)
+scatterplot3d(points2[,1],points2[,2],points2[,3],pch=".")
 
-# points <- list()
-# plot(0,0,type="n",ylim=c(-200,200),xlim=c(-200,200))
-# for(i in 1:length(worldfull@polygons[[238]]@plotOrder))
-#   points[[i]] <- cbind(worldfull@polygons[[238]]@Polygons[[i]]@coords[,1],worldfull@polygons[[238]]@Polygons[[i]]@coords[,2])
-# points <- lapply(points,FUN=function(x) convertpoints(x[,1],x[,2]))
 
+worldfull <- readShapePoly("C:\\users\\ben\\my documents\\github\\RGlobe\\Data\\Azimuth_LoRes_Nations")
+worldfull$Continent[is.na(worldfull$Continent)] <- "Europe"
+plot(worldfull)
+points <- c(NULL,NULL,NULL,NULL)
+for(i in 1:length(worldfull))
+{
+  if(worldfull$Continent[i]!="Antarctica")
+  {
+    for(j in 1:length(worldfull@polygons[[i]]@Polygons))
+    {
+      points <- rbind(points, cbind((worldfull@polygons[[i]])@Polygons[[j]]@coords[,1],(worldfull@polygons[[i]])@Polygons[[j]]@coords[,2],i,j))
+    }
+  }
+}
+summary(points)
+points2 <- apply(points,1,FUN=function(x) convertpoints(x[1],x[2]))
+points2 <- t(points2)
 scatterplot3d(points2[,1],points2[,2],points2[,3],pch=".")
 
 ex <- 0; ey <- 0; ez <- -16;
