@@ -80,9 +80,9 @@ rotatey <- function(object,deg=1)
 ################################################################
 
 worldfull <- cshp()
-plot(worldfull)
 test$CNTRY_NAME
-#worldfull <- gSimplify(worldfull,1)
+worldfull <- gSimplify(worldfull,2)
+plot(worldfull)
 points <- c(NULL,NULL,NULL,NULL)
 for(i in 1:length(worldfull))
 {
@@ -158,3 +158,9 @@ keydown <- function(key)
 }
 points(project(points2)[,1],project(points2)[,2],pch=".")
 checkForKey()
+
+points <- cbind(points,paste(points[,3],points[,4],sep="_"))
+plot(1,1,type="n",ylim=c(-90,90),xlim=c(-180,180))
+for(i in unique(points[,5]))
+  polygon(points[points[,5]==i,])
+points[1:100,]
