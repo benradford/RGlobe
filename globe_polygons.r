@@ -38,9 +38,26 @@ plotpoly <- function(object)
 {
   if(sum(object[,3]>=0)>2)
   {
-    poly <- project(object[object[,3]>=0,])
+    #if(sum(object[,3]<0)>0)
+    #{
+    #  poly <- filledge(object)
+    #}
+    #if(sum(object[,3]<0)<=0)
+      poly <- project(object[object[,3]>=0,])
     polygon(poly,col="white",border="blue")
   }
+}
+
+filledge <- function(object)
+{
+  circle <- cbind(getradius()*cos((seq(1,360,by=5))*pi/180),getradius()*sin((seq(1,360,by=5))*pi/180)) # THIS CAN GO OUTSIDE EVENTUALLY
+  object <- points2[[32]]
+  object
+  poly <- cbind(project(object),object[,3])
+  #object <- object[object[,3]>=0,]
+  negindices <- apply(poly[,1:2],1,FUN=function(x){which(min(sqrt((x[1]-circle[,1])^2+(x[2]-circle[,2])^2))==sqrt((x[1]-circle[,1])^2+(x[2]-circle[,2])^2))})
+  poly[poly[,3]<0,1:2] <- circle[negindices[poly[,3]<0],]
+
 }
 
 getradius <- function()
@@ -101,7 +118,7 @@ worldfull <- cshp(date=as.Date("2012-06-30"))
 worldfull <- gSimplify(worldfull,1)
 
 worldfull <- readShapePoly("C:\\users\\ben\\my documents\\github\\RGlobe\\Data\\Azimuth_LoRes_Nations")
-worldfull2 <- gSimplify(worldfull,1)
+worldfull <- gSimplify(worldfull,2)
 
 (worldfull$Nation)
 names(worldfull2)
@@ -183,6 +200,7 @@ keydown <- function(key)
 lapply(points2, FUN=function(x) plotpoly(x))
 checkForKey()
 
+
 points <- cbind(points,paste(points[,3],points[,4],sep="_"))
 plot(1,1,type="n",ylim=c(-90,90),xlim=c(-180,180))
 for(i in unique(points[,5]))
@@ -197,3 +215,11 @@ polygon(cbind(rad*cos((1:360)*pi/180),rad*sin((1:360)*pi/180)),lty=0,col="blue")
 Sys.getenv('NUMBER_OF_PROCESSORS') 
 install.packages("multicore")
 library(multicore)
+
+install.packages("snow")
+library(snow)
+cl <- makeCluster(8,type="SOCK")
+clusterCall(cl,function(x=2){x+1},5)
+plot(-5:5,-5:5,type="n")
+parRapply(cl,cbind(rnorm(100,0,1),rnorm(100,0,1)),fun=function(x){points(x,add=T)})
+stopCluster(cl)
