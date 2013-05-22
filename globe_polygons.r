@@ -51,9 +51,14 @@ plotpoly <- function(object)
 filledge <- function(object)
 {
   circle <- cbind(getradius()*cos((seq(1,360,by=5))*pi/180),getradius()*sin((seq(1,360,by=5))*pi/180)) # THIS CAN GO OUTSIDE EVENTUALLY
-  object <- points2[[32]]
+  object <- points2[[104]]
+  object[5:10,3] <- -10
   object
   poly <- cbind(project(object),object[,3])
+  negind <- which(poly[,3]<0)
+  posind <- which(poly[,3]>=0)
+  sapply(posind,FUN=function(x) min(abs(x-negind)))
+  #NEXT, CATCH END POINTS NEXT TO NEGS
   #object <- object[object[,3]>=0,]
   negindices <- apply(poly[,1:2],1,FUN=function(x){which(min(sqrt((x[1]-circle[,1])^2+(x[2]-circle[,2])^2))==sqrt((x[1]-circle[,1])^2+(x[2]-circle[,2])^2))})
   poly[poly[,3]<0,1:2] <- circle[negindices[poly[,3]<0],]
@@ -115,7 +120,7 @@ rotatey <- function(object,deg=1)
 ################################################################
 
 worldfull <- cshp(date=as.Date("2012-06-30"))
-worldfull <- gSimplify(worldfull,1)
+worldfull <- gSimplify(worldfull,.5)
 
 worldfull <- readShapePoly("C:\\users\\ben\\my documents\\github\\RGlobe\\Data\\Azimuth_LoRes_Nations")
 worldfull <- gSimplify(worldfull,2)
