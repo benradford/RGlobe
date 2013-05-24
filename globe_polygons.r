@@ -83,6 +83,13 @@ convertpoints <- function(lon,lat,alt=1,rad=1)
   return(cbind(x,y,z))
 }
 
+cart2latlon <- function(x,y,z,rad=1)
+{
+  lat <- asin(z/rad)
+  lon <- atan2(y,x)
+  return(cbind(lon,lat))
+}
+
 project <- function(object)
 {
   sx1 <- ((object[,1]-ex)*(100))/(object[,3]-ez)+ex
